@@ -73,8 +73,8 @@ public class ContentController {
 
 
     // 게시글 조회수 상위 조회 //
-    @GetMapping("/Homepage")
-    public ResponseEntity getContentsViewRank(@RequestParam("size") int size) {
+    @GetMapping("/homepage")
+    public ResponseEntity getContentsViewRank() {
         List<Content> contents = contentService.findContentsViewRank();
 
         return new ResponseEntity<>(contentMapper.contentsToHomepageContentResponseDto(contents),
