@@ -97,10 +97,10 @@ public interface ContentMapper {
     }
     // 컨텐츠 to 홈페이지 컨텐츠 리스폰스 //
     default List<HomepageContentResponseDto> contentsToHomepageContentResponseDto(List<Content> contents){
-
         return contents.stream()
                 .map(content -> HomepageContentResponseDto.builder()
                         .contentId(content.getContentId())
+                        .userId(content.getUser().getUserId())
                         .title(content.getTitle())
                         .contentImageList(content.getContentImageList())
                         .viewCount(content.getViewCount())
