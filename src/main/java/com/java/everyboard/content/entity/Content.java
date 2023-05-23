@@ -37,7 +37,7 @@ public class Content extends Auditable {
     private final List<ContentImage> contentImageList = new ArrayList<>(); // 컨텐츠 이미지 리스트값
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Category category = Category.Board; // 카테고리 (Enum값으로 받음)
+    private Category category = Category.BOARD; // 카테고리 (Enum값으로 받음)
     @Column(nullable = false)
     private String tag;
 
