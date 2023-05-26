@@ -63,6 +63,9 @@ public class ContentService {
         Optional.ofNullable(content.getTitle())
                 .ifPresent(findContent::setTitle);
 
+        Optional.ofNullable(content.getContent())
+                .ifPresent(findContent::setContent);
+
         Optional.ofNullable(content.getCategory())
                 .ifPresent(findContent::setCategory);
 

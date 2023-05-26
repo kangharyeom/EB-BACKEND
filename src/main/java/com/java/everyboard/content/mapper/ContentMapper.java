@@ -85,6 +85,7 @@ public interface ContentMapper {
                 .userId(user.getUserId())
                 .nickname(user.getNickname())
                 .title(content.getTitle())
+                .content(content.getContent())
                 .contentHeartCount(content.getContentHeartCount())
                 .category(content.getCategory())
                 .comments(commentsToCommentResponseDtos(comments))
