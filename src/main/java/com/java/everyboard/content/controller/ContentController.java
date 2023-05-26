@@ -111,4 +111,12 @@ public class ContentController {
                 new SingleResponseDto<>(response), HttpStatus.OK
         );
     }
+
+    // 게시글 검색 기능 //
+    @GetMapping("/search")
+    public ResponseEntity getSearch(@RequestParam(value = "keyword",required = false) String keyword) {
+        List<Content> contents = contentService.findAllSearch(keyword);
+        return new ResponseEntity<>(contentMapper.contentsToContentResponse(contents),
+                HttpStatus.OK);
+    }
 }

@@ -90,6 +90,10 @@ public class ContentService {
         return contentRepository.findContentsViewRank();
     }
 
+    // 검색 기능 //
+    public List<Content> findAllSearch(String keyword){
+        return contentRepository.findAllSearch(keyword);
+    }
 
 
     // 게시글 삭제 //
