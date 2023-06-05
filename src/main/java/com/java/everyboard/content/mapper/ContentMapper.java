@@ -101,13 +101,16 @@ public interface ContentMapper {
         return contents.stream()
                 .map(content -> HomepageContentResponseDto.builder()
                         .contentId(content.getContentId())
-                        .userId(content.getUser().getUserId())
                         .title(content.getTitle())
+                        .build())
+                .collect(Collectors.toList());
+    }
+    // 컨텐츠 to 홈페이지 컨텐츠 이미지 리스폰스 //
+    default List<HomepageContentImageResponseDto> contentsToHomepageContentImageResponseDto(List<Content> contents){
+        return contents.stream()
+                .map(content -> HomepageContentImageResponseDto.builder()
+                        .contentId(content.getContentId())
                         .contentImageList(content.getContentImageList())
-                        .viewCount(content.getViewCount())
-                        .category(content.getCategory())
-                        .createdAt(content.getCreatedAt())
-                        .modifiedAt(content.getModifiedAt())
                         .build())
                 .collect(Collectors.toList());
     }

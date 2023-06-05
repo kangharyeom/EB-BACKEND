@@ -86,8 +86,24 @@ public class ContentService {
     }
 
     // 게시글 조회수 상위 조회 //
-    public List<Content> findContentsViewRank() {
-        return contentRepository.findContentsViewRank();
+    // today(현재시간-24 ~ 현재시간)
+    public List<Content> findContentsTodayViewRank() {
+        return contentRepository.findContentsTodayViewRank();
+    }
+
+    // weekly(현재시간 -일주일 ~ 현재시간)
+    public List<Content> findContentsWeeklyViewRank() {
+        return contentRepository.findContentsWeeklyViewRank();
+    }
+
+    // 좋아요 상위
+    public List<Content> findContentsLikeRank() {
+        return contentRepository.findContentsLikeRank();
+    }
+
+    // 홈페이지 최신 이미지
+    public List<Content> findContentsRecentImage() {
+        return contentRepository.findContentsRecentImage();
     }
 
     // 검색 기능 //

@@ -72,12 +72,40 @@ public class ContentController {
     }
 
 
-    // 게시글 조회수 상위 조회 //
-    @GetMapping("/homepage")
-    public ResponseEntity getContentsViewRank() {
-        List<Content> contents = contentService.findContentsViewRank();
+    // 홈페이지 조회수 상위 조회 //
+    // today(현재시간-24 ~ 현재시간)
+    @GetMapping("/homepage/today")
+    public ResponseEntity getContentsTodayViewRank() {
+        List<Content> contents = contentService.findContentsTodayViewRank();
 
         return new ResponseEntity<>(contentMapper.contentsToHomepageContentResponseDto(contents),
+                HttpStatus.OK);
+    }
+
+    // weekly(현재시간 -일주일 ~ 현재시간)
+    @GetMapping("/homepage/weekly")
+    public ResponseEntity getContentsWeeklyViewRank() {
+        List<Content> contents = contentService.findContentsWeeklyViewRank();
+
+        return new ResponseEntity<>(contentMapper.contentsToHomepageContentResponseDto(contents),
+                HttpStatus.OK);
+    }
+
+    // 좋아요 상위
+    @GetMapping("/homepage/like")
+    public ResponseEntity getContentsLikeRank() {
+        List<Content> contents = contentService.findContentsLikeRank();
+
+        return new ResponseEntity<>(contentMapper.contentsToHomepageContentResponseDto(contents),
+                HttpStatus.OK);
+    }
+
+    // 홈페이지 최신 이미지
+    @GetMapping("/homepage/image")
+    public ResponseEntity getContentsRecentImage() {
+        List<Content> contents = contentService.findContentsRecentImage();
+
+        return new ResponseEntity<>(contentMapper.contentsToHomepageContentImageResponseDto(contents),
                 HttpStatus.OK);
     }
 
