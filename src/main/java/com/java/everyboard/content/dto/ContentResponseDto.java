@@ -5,9 +5,6 @@ import com.java.everyboard.content.entity.ContentImage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,7 +18,7 @@ public class ContentResponseDto {
     private Long contentHeartCount;
     private String title;
     private String content;
-    private List<ContentImage> contentImageList; // 컨텐츠 이미지를 담는 주소
+    private List<ContentImage> contentImages; // 컨텐츠 이미지를 담는 주소
     private Category category;
     private String tag;
     private LocalDateTime createdAt;

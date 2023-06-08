@@ -1,9 +1,8 @@
 package com.java.everyboard.content.service;
 
-import com.java.everyboard.AwsS3.AwsS3Service;
+import com.java.everyboard.awsS3.AwsS3Service;
 import com.java.everyboard.comment.repository.CommentRepository;
 import com.java.everyboard.content.dto.ContentAllResponseDto;
-import com.java.everyboard.content.dto.HomepageContentResponseDto;
 import com.java.everyboard.content.entity.Content;
 import com.java.everyboard.content.entity.ContentImage;
 import com.java.everyboard.content.mapper.ContentMapper;
@@ -24,7 +23,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
 
 @Service
 @Transactional
@@ -41,15 +40,20 @@ public class ContentService {
     // 게시글 생성 //
     public Content createContent(Content content, List<String> imgPaths) {
         blankCheck(imgPaths);
+        System.out.println("로그인한 user: "+userService.getLoginUser());
         content.setUser(userService.getLoginUser());
 
+        contentRepository.save(content);
+
         List<String> fileNameList = new ArrayList<>();
-        for (String imgUrl : imgPaths) {
-            ContentImage img = new ContentImage(imgUrl, content);
+        for (String contentImgUrl : imgPaths) {
+            ContentImage img = new ContentImage(content.getContentId(),contentImgUrl);
+            img.setContentId(content.getContentId());
             contentImageRepository.save(img);
             fileNameList.add(img.getContentImgUrl());
         }
-        return contentRepository.save(content);
+
+        return content;
     }
 
     // 게시글 수정 //
@@ -62,6 +66,9 @@ public class ContentService {
 
         Optional.ofNullable(content.getTitle())
                 .ifPresent(findContent::setTitle);
+
+        Optional.ofNullable(content.getContent())
+                .ifPresent(findContent::setContent);
 
         Optional.ofNullable(content.getCategory())
                 .ifPresent(findContent::setCategory);
@@ -83,10 +90,30 @@ public class ContentService {
     }
 
     // 게시글 조회수 상위 조회 //
-    public List<Content> findContentsViewRank() {
-        return contentRepository.findContentsViewRank();
+    // today(현재시간-24 ~ 현재시간)
+    public List<Content> findContentsTodayViewRank() {
+        return contentRepository.findContentsTodayViewRank();
     }
 
+    // weekly(현재시간 -일주일 ~ 현재시간)
+    public List<Content> findContentsWeeklyViewRank() {
+        return contentRepository.findContentsWeeklyViewRank();
+    }
+
+    // 좋아요 상위
+    public List<Content> findContentsLikeRank() {
+        return contentRepository.findContentsLikeRank();
+    }
+
+    // 홈페이지 최신 이미지
+    public List<Content> findContentsRecentImage() {
+        return contentRepository.findContentsRecentImage();
+    }
+
+    // 검색 기능 //
+    public List<Content> findAllSearch(String keyword){
+        return contentRepository.findAllSearch(keyword);
+    }
 
 
     // 게시글 삭제 //
@@ -110,7 +137,7 @@ public class ContentService {
 
     // 게시글 검증 로직 //
     public Content findVerifiedContent(Long contentId) {
-        Optional<Content> optionalContent = contentRepository.findById(contentId);
+        Optional<Content> optionalContent = contentRepository.findByContentId(contentId);
         Content findContent =
                 optionalContent.orElseThrow(() ->
                         new BusinessLogicException(ExceptionCode.STACK_NOT_FOUND));

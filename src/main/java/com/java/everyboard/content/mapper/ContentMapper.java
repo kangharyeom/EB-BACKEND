@@ -6,6 +6,8 @@ import com.java.everyboard.comment.repository.CommentRepository;
 import com.java.everyboard.constant.Category;
 import com.java.everyboard.content.dto.*;
 import com.java.everyboard.content.entity.Content;
+import com.java.everyboard.content.entity.ContentImage;
+import com.java.everyboard.content.repository.ContentImageRepository;
 import com.java.everyboard.content.repository.ContentRepository;
 import com.java.everyboard.user.entity.User;
 import org.mapstruct.Mapper;
@@ -24,8 +26,9 @@ public interface ContentMapper {
     Content contentPatchDtoToContent(ContentPatchDto requestBody);
 
     // 컨텐츠 to 컨텐츠 리스폰스 (단건) //
-    default ContentResponseDto contentToContentResponse(Content content){
+    default ContentResponseDto contentToContentResponse(Content content, ContentImageRepository contentImageRepository){
         User user = content.getUser();
+        List<ContentImage> contentImage = contentImageRepository.findByContentId(content.getContentId());
 
         return ContentResponseDto.builder()
                 .contentId(content.getContentId())
@@ -34,7 +37,7 @@ public interface ContentMapper {
                 .contentHeartCount(content.getContentHeartCount())
                 .title(content.getTitle())
                 .content(content.getContent())
-                .contentImageList(content.getContentImageList())
+                .contentImages(contentImage)
                 .category(content.getCategory())
                 .tag(content.getTag())
                 .createdAt(content.getCreatedAt())
@@ -67,7 +70,7 @@ public interface ContentMapper {
                         .viewCount(content.getViewCount())
                         .contentHeartCount(content.getContentHeartCount())
                         .category(content.getCategory())
-                        .contentImageList(content.getContentImageList())
+                        .contentImages(content.getContentImages())
                         .createdAt(content.getCreatedAt())
                         .modifiedAt(content.getModifiedAt())
                         .build())
@@ -85,28 +88,32 @@ public interface ContentMapper {
                 .userId(user.getUserId())
                 .nickname(user.getNickname())
                 .title(content.getTitle())
+                .content(content.getContent())
                 .contentHeartCount(content.getContentHeartCount())
                 .category(content.getCategory())
                 .comments(commentsToCommentResponseDtos(comments))
                 .createdAt(content.getCreatedAt())
                 .modifiedAt(content.getModifiedAt())
-                .contentImageList(content.getContentImageList())
+                .contentImages(content.getContentImages())
                 .tag(content.getTag())
                 .viewCount(content.getViewCount())
                 .build();
     }
     // 컨텐츠 to 홈페이지 컨텐츠 리스폰스 //
     default List<HomepageContentResponseDto> contentsToHomepageContentResponseDto(List<Content> contents){
-
         return contents.stream()
                 .map(content -> HomepageContentResponseDto.builder()
                         .contentId(content.getContentId())
                         .title(content.getTitle())
-                        .contentImageList(content.getContentImageList())
-                        .viewCount(content.getViewCount())
-                        .category(content.getCategory())
-                        .createdAt(content.getCreatedAt())
-                        .modifiedAt(content.getModifiedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+    // 컨텐츠 to 홈페이지 컨텐츠 이미지 리스폰스 //
+    default List<HomepageContentImageResponseDto> contentsToHomepageContentImageResponseDto(List<Content> contents){
+        return contents.stream()
+                .map(content -> HomepageContentImageResponseDto.builder()
+                        .contentId(content.getContentId())
+                        .contentImages(content.getContentImages())
                         .build())
                 .collect(Collectors.toList());
     }

@@ -9,4 +9,5 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface ContentImageRepository extends JpaRepository<ContentImage, Long> {
+    List<ContentImage> findByContentId(long contentId);
 }
