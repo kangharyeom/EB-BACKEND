@@ -1,5 +1,6 @@
-package com.java.everyboard.awsS3;
+package com.java.everyboard.AwsS3;
 
+import com.java.everyboard.awsS3.AwsS3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
