@@ -25,7 +25,7 @@ public interface ContentMapper {
     // 컨텐츠 패치 to 컨텐츠 //
     Content contentPatchDtoToContent(ContentPatchDto requestBody);
 
-    // 컨텐츠 to 컨텐츠 리스폰스 (단건) //
+    // 컨텐츠 to 컨텐츠 리스폰스 //
     default ContentResponseDto contentToContentResponse(Content content, ContentImageRepository contentImageRepository){
         User user = content.getUser();
         List<ContentImage> contentImage = contentImageRepository.findByContentId(content.getContentId());
@@ -39,46 +39,13 @@ public interface ContentMapper {
                 .content(content.getContent())
                 .contentImages(contentImage)
                 .category(content.getCategory())
-                .tag(content.getTag())
                 .createdAt(content.getCreatedAt())
                 .modifiedAt(content.getModifiedAt())
                 .build();
     }
 
-    // 컨텐츠(다중) to 컨텐츠 리스폰스 (전체) //
-    List<ContentResponseDto> contentsToContentResponse(List<Content> contents);
-
-    // 카테고리 list 선언 //
-    default CategoryContentsResponseDto categoryContentsResponseDto(Category category, ContentRepository contentRepository){
-        List<Content> contents = contentRepository.findAllByCategory(category);
-
-        return CategoryContentsResponseDto.builder()
-                .category(category)
-                .contents(contentsToCategoryContentsResponseDtos(contents))
-                .build();
-    }
-
-    // 컨텐츠 to 카테고리 리스폰스 //
-    default List<CategoryResponseDto> contentsToCategoryContentsResponseDtos(List<Content> contents){
-        return contents.stream()
-                .map(content -> CategoryResponseDto.builder()
-                        .contentId(content.getContentId())
-                        .userId(content.getUser().getUserId())
-                        .nickname(content.getUser().getNickname())
-                        .title(content.getTitle())
-                        .content(content.getContent())
-                        .viewCount(content.getViewCount())
-                        .contentHeartCount(content.getContentHeartCount())
-                        .category(content.getCategory())
-                        .contentImages(content.getContentImages())
-                        .createdAt(content.getCreatedAt())
-                        .modifiedAt(content.getModifiedAt())
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    // 컨텐츠 to 컨텐트 전체 리스폰스 //
-    default ContentAllResponseDto contentToContentAllResponse(Content content, CommentRepository commentRepository){
+    // 컨텐츠 to 컨텐트 단건 조회 //
+    default ContentAllResponseDto contentToContentAllResponse(Content content, CommentRepository commentRepository, ContentImageRepository contentImageRepository){
         User user = content.getUser();
         List<Comment> comments = commentRepository.findAllByContentId(content.getContentId());
         Collections.reverse(comments);
@@ -94,11 +61,96 @@ public interface ContentMapper {
                 .comments(commentsToCommentResponseDtos(comments))
                 .createdAt(content.getCreatedAt())
                 .modifiedAt(content.getModifiedAt())
-                .contentImages(content.getContentImages())
-                .tag(content.getTag())
+                .contentImages(contentImageRepository.findByContentId(content.getContentId()))
                 .viewCount(content.getViewCount())
                 .build();
     }
+/*
+    // 컨텐츠(다중) to 컨텐츠 리스폰스 (전체) //
+    List<ContentResponseDto> contentsToContentResponse(List<Content> contents);*/
+
+    // 컨텐츠 List 선언
+    default ContentsListDto contentsToContentResponse(List<Content> contents, ContentImageRepository contentImageRepository){
+
+        return ContentsListDto.builder()
+                .contentResponseDto(contentsToContentsResponse(contents, contentImageRepository))
+                .build();
+    }
+
+    // 컨텐츠(다중) to 컨텐츠 리스폰스 (전체) //
+    default List<ContentResponseDto> contentsToContentsResponse(List<Content> contents, ContentImageRepository contentImageRepository){
+        return contents.stream()
+                .map(content -> ContentResponseDto.builder()
+                        .contentId(content.getContentId())
+                        .userId(content.getUser().getUserId())
+                        .title(content.getTitle())
+                        .content(content.getContent())
+                        .viewCount(content.getViewCount())
+                        .contentHeartCount(content.getContentHeartCount())
+                        .category(content.getCategory())
+                        .contentImages(contentImageRepository.findByContentId(content.getContentId()))
+                        .createdAt(content.getCreatedAt())
+                        .modifiedAt(content.getModifiedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    // 카테고리 list 선언 //
+    default CategoryContentsResponseDto categoryContentsResponseDto(Category category, ContentRepository contentRepository, ContentImageRepository contentImageRepository){
+        List<Content> contents = contentRepository.findAllByCategory(category);
+
+        return CategoryContentsResponseDto.builder()
+                .category(category)
+                .contents(contentsToCategoryContentsResponseDtos(contents, contentImageRepository))
+                .build();
+    }
+
+    // 컨텐츠 to 카테고리 리스폰스 //
+    default List<CategoryResponseDto> contentsToCategoryContentsResponseDtos(List<Content> contents, ContentImageRepository contentImageRepository){
+        return contents.stream()
+                .map(content -> CategoryResponseDto.builder()
+                        .contentId(content.getContentId())
+                        .userId(content.getUser().getUserId())
+                        .nickname(content.getUser().getNickname())
+                        .title(content.getTitle())
+                        .content(content.getContent())
+                        .viewCount(content.getViewCount())
+                        .contentHeartCount(content.getContentHeartCount())
+                        .category(content.getCategory())
+                        .contentImages(contentImageRepository.findByContentId(content.getContentId()))
+                        .createdAt(content.getCreatedAt())
+                        .modifiedAt(content.getModifiedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    // 스크랩 list 선언 //
+    default ScrapListDto scrapResponseDto(User user, ContentRepository contentRepository, ContentImageRepository contentImageRepository){
+        List<Content> contents = contentRepository.findAllByScraps(user.getUserId());
+
+        return ScrapListDto.builder()
+                .contents(contentsRoScrapList(contents, contentImageRepository))
+                .build();
+    }
+
+    // 스크랩 to 카테고리 리스폰스 //
+    default List<ScrapResponseDto> contentsRoScrapList(List<Content> contents, ContentImageRepository contentImageRepository){
+        return contents.stream()
+                .map(content -> ScrapResponseDto.builder()
+                        .contentId(content.getContentId())
+                        .userId(content.getUser().getUserId())
+                        .nickname(content.getUser().getNickname())
+                        .title(content.getTitle())
+                        .content(content.getContent())
+                        .viewCount(content.getViewCount())
+                        .contentHeartCount(content.getContentHeartCount())
+                        .contentImages(contentImageRepository.findByContentId(content.getContentId()))
+                        .createdAt(content.getCreatedAt())
+                        .modifiedAt(content.getModifiedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     // 컨텐츠 to 홈페이지 컨텐츠 리스폰스 //
     default List<HomepageContentResponseDto> contentsToHomepageContentResponseDto(List<Content> contents){
         return contents.stream()
@@ -109,11 +161,11 @@ public interface ContentMapper {
                 .collect(Collectors.toList());
     }
     // 컨텐츠 to 홈페이지 컨텐츠 이미지 리스폰스 //
-    default List<HomepageContentImageResponseDto> contentsToHomepageContentImageResponseDto(List<Content> contents){
+    default List<HomepageContentImageResponseDto> contentsToHomepageContentImageResponseDto(List<Content> contents, ContentImageRepository contentImageRepository){
         return contents.stream()
                 .map(content -> HomepageContentImageResponseDto.builder()
                         .contentId(content.getContentId())
-                        .contentImages(content.getContentImages())
+                        .contentImages(contentImageRepository.findByContentId(content.getContentId()))
                         .build())
                 .collect(Collectors.toList());
     }

@@ -1,17 +1,21 @@
 package com.java.everyboard.content.controller;
 
 
+
 import com.java.everyboard.awsS3.AwsS3Service;
+import com.java.everyboard.comment.repository.CommentRepository;
 import com.java.everyboard.constant.Category;
 import com.java.everyboard.content.dto.*;
 import com.java.everyboard.content.entity.Content;
 import com.java.everyboard.content.mapper.ContentMapper;
+
 import com.java.everyboard.content.repository.ContentImageRepository;
 import com.java.everyboard.content.repository.ContentRepository;
 import com.java.everyboard.exception.BusinessLogicException;
 import com.java.everyboard.exception.ExceptionCode;
 import com.java.everyboard.response.SingleResponseDto;
 import com.java.everyboard.content.service.ContentService;
+import com.java.everyboard.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -34,12 +38,15 @@ public class ContentController {
     private final ContentRepository contentRepository;
     private final ContentImageRepository contentImageRepository;
     private final AwsS3Service awsS3Service;
+    private final CommentRepository commentRepository;
+
 
 
     // 게시글 생성 //
     @PostMapping
     public ResponseEntity postContent(@Valid @RequestPart("data") ContentPostDto requestBody,
                                       @RequestPart(required=false, value="ContentImgUrl") List<MultipartFile> multipartFiles) {
+
         if (multipartFiles == null) {
             throw new BusinessLogicException(ExceptionCode.STACK_NOT_FOUND);
         }
@@ -47,6 +54,7 @@ public class ContentController {
         log.info("IMG 경로들 : "+ imgPaths);
         Content content = contentService.createContent(contentMapper.contentPostDtoToContent(requestBody),imgPaths);
         ContentResponseDto contentResponse = contentMapper.contentToContentResponse(content, contentImageRepository);
+
 
         return new ResponseEntity<>(
                 new SingleResponseDto<>(contentResponse) , HttpStatus.CREATED
@@ -61,7 +69,7 @@ public class ContentController {
         content.setViewCount(++viewCount);
         contentService.updateViewCount(content);
 
-        return new ResponseEntity<>(contentMapper.contentToContentResponse(content,contentImageRepository),
+        return new ResponseEntity<>(contentMapper.contentToContentAllResponse(content,commentRepository,contentImageRepository),
                 HttpStatus.OK);
     }
 
@@ -70,9 +78,10 @@ public class ContentController {
     public ResponseEntity getContents(@RequestParam("size") int size) {
         List<Content> contents = contentService.findContents();
 
-        return new ResponseEntity<>(contentMapper.contentsToContentResponse(contents),
+        return new ResponseEntity<>(contentMapper.contentsToContentResponse(contents, contentImageRepository),
                 HttpStatus.OK);
     }
+
 
 
     // 홈페이지 조회수 상위 조회 //
@@ -108,10 +117,36 @@ public class ContentController {
     public ResponseEntity getContentsRecentImage() {
         List<Content> contents = contentService.findContentsRecentImage();
 
-        return new ResponseEntity<>(contentMapper.contentsToHomepageContentImageResponseDto(contents),
+        return new ResponseEntity<>(contentMapper.contentsToHomepageContentImageResponseDto(contents, contentImageRepository),
                 HttpStatus.OK);
     }
 
+    // 카테고리별 컨텐츠 조회
+    @GetMapping("/category/{category}")
+    public ResponseEntity getContentFromCategory(@PathVariable("category") Category category){
+        CategoryContentsResponseDto response = contentMapper.categoryContentsResponseDto(category, contentRepository, contentImageRepository);
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(response), HttpStatus.OK
+        );
+    }
+
+    // 스크랩한 컨텐츠 조회
+    @GetMapping("/{userId}/scraps")
+    public ResponseEntity getContentFromScrap(@PathVariable("userId") Long userId){
+        User user = contentService.findVerifiedUser(userId);
+        ScrapListDto response = contentMapper.scrapResponseDto(user, contentRepository, contentImageRepository);
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(response), HttpStatus.OK
+        );
+    }
+
+    // 게시글 검색 기능 //
+    @GetMapping("/search")
+    public ResponseEntity getSearch(@RequestParam(value = "keyword",required = false) String keyword) {
+        List<Content> contents = contentService.findAllSearch(keyword);
+        return new ResponseEntity<>(contentMapper.contentsToContentResponse(contents, contentImageRepository),
+                HttpStatus.OK);
+    }
 
     // 게시글 수정 //
     @PatchMapping("/{contentId}")
@@ -132,22 +167,5 @@ public class ContentController {
         contentService.deleteContent(contentId);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    // 카테고리별 컨텐츠 조회
-    @GetMapping("/category/{category}")
-    public ResponseEntity getContentFromCategory(@PathVariable("category") Category category){
-        CategoryContentsResponseDto response = contentMapper.categoryContentsResponseDto(category, contentRepository);
-        return new ResponseEntity<>(
-                new SingleResponseDto<>(response), HttpStatus.OK
-        );
-    }
-
-    // 게시글 검색 기능 //
-    @GetMapping("/search")
-    public ResponseEntity getSearch(@RequestParam(value = "keyword",required = false) String keyword) {
-        List<Content> contents = contentService.findAllSearch(keyword);
-        return new ResponseEntity<>(contentMapper.contentsToContentResponse(contents),
-                HttpStatus.OK);
     }
 }

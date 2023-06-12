@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ContentRepository extends JpaRepository<Content, Long> {
+    List<Content> findAll();
     List<Content> findAllByCategory(Category category);
+    @Query(value = "select * from contents as u inner join scrap as b on u.user_id = b.user_id where u.user_id = :userId", nativeQuery = true)
+    List<Content> findAllByScraps(@Param("userId") long userId);
     Optional<Content> findByContentId(long contentId);
-
-    @Query(value = "select * from contents where user_id = :userId", nativeQuery = true)
-    List<Content> findAllByUserId(long userId);
 
     // 게시글 조회수 상위 조회//
 
@@ -27,7 +27,8 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
     List<Content> findContentsWeeklyViewRank();
 
     // 좋아요 상위
-    @Query(value = "select * from contents order by content_heart_count desc limit 10", nativeQuery = true)
+    // 이번주 좋아요 상위
+    @Query(value = "select * from contents where created_at BETWEEN TIMESTAMPADD(day, -7, NOW()) AND NOW() order by content_heart_count desc limit 10", nativeQuery = true)
     List<Content> findContentsLikeRank();
 
     // 홈페이지 최신 이미지
@@ -35,6 +36,6 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
     List<Content> findContentsRecentImage();
 
     // 게시글 검색기능
-    @Query(value = "select * from contents WHERE title LIKE %:keyword% OR content LIKE %:keyword% ", nativeQuery = true)
+    @Query(value = "select * from contents where title like %:keyword% or content like %:keyword% ", nativeQuery = true)
     List<Content> findAllSearch(@Param(value = "keyword")String keyword);
 }
