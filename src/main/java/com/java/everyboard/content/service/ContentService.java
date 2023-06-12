@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -116,7 +117,7 @@ public class ContentService {
         if(userService.getLoginUser().getUserId() != writer.getUserId()) // 작성자와 로그인한 사람이 다를 경우
             throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED); //예외 발생(권한 없음)
         contentRepository.delete(findContent);
-      
+
         List<ContentImage> contentImagesList = contentImageRepository.findByContentId(contentId);
         for(ContentImage contentImage: contentImagesList){
             awsS3Service.deleteFile(contentImage.getContentImgUrl());
